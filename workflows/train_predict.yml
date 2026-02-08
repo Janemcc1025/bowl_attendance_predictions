@@ -1,0 +1,38 @@
+name: Train and Predict Bowl Attendance
+
+on:
+  push:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 14 * * 1"  # Mondays 9am ET
+
+jobs:
+  run-model:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Train + Predict
+        run: |
+          python src/train_predict.py \
+            --data data/bowl_games.csv \
+            --year_col Season \
+            --target_col Attendance \
+            --predict_year 2025
+
+      - name: Upload outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: bowl-attendance-outputs
+          path: outputs/
